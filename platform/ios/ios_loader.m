@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
                     [koreaderDir fileSystemRepresentation]);
             return EXIT_FAILURE;
         }
+        fprintf(stderr, "[%s]: chdir to app OK\n", LOGNAME);
 
         if (setenv("LC_ALL", LANGUAGE, 1) != 0) {
             fprintf(stderr, "[%s]: setenv LC_ALL failed\n", LOGNAME);
@@ -79,6 +80,18 @@ int main(int argc, char *argv[]) {
         if (docs.count > 0) {
             setenv("KO_HOME", [docs[0] fileSystemRepresentation], 1);
         }
+        /* Diagnostic: redirect stdout/stderr into the app's Documents dir so
+         * boot output (and any Lua/SDL error) is readable via the Files app
+         * (UIFileSharingEnabled). Remove after diagnosis. */
+        if (docs.count > 0) {
+            NSString *logPath = [docs[0] stringByAppendingPathComponent:@"ko_ios_boot.log"];
+            const char *lp = [logPath fileSystemRepresentation];
+            freopen(lp, "a", stdout);
+            freopen(lp, "a", stderr);
+            setenv("KO_BOOT_LOG", lp, 1);
+            fprintf(stderr, "\n===== KOReader iOS launch %s =====\n",
+                    [[NSDate date] description].UTF8String);
+        }
 
         lua_State *L = luaL_newstate();
         luaL_openlibs(L);
@@ -100,6 +113,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        fprintf(stderr, "[%s]: running reader.lua...\n", LOGNAME);
         retval = luaL_dofile(L, "reader.lua");
         if (retval) {
             fprintf(stderr, LUA_ERROR, lua_tostring(L, -1));

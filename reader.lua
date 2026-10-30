@@ -44,6 +44,7 @@ if device_id == nil or device_id == "" then
     local random = require("random")
     G_reader_settings:saveSetting("device_id", random.uuid())
 end
+io.write(" [*] reader.lua: early boot OK (settings loaded)\n")
 
 -- Apply the JIT opt tweaks ASAP when the C BB is disabled,
 -- because we want to avoid the jit.flush() from bb:enableCBB,
@@ -250,6 +251,7 @@ if G_reader_settings:isTrue("color_rendering") and not Device:hasColorScreen() t
     UIManager:runOnce()
 end
 
+io.write(" [*] reader.lua: init done, launching UI\n")
 local exit_code
 
 if not Device:isStartupScriptUpToDate() then
