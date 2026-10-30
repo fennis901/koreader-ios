@@ -195,6 +195,16 @@ function Device:init()
     -- Pickup the updated window sizes if they were enforced in S.open (we'll get the coordinates via the initial SDL_WINDOWEVENT_MOVED)...
     self.window.width = self.screen.w
     self.window.height = self.screen.h
+    -- DIAGNOSTIC: report SDL renderer/texture state right after screen init
+    io.write("[diag] device: screen created, renderer=", tostring(SDL.renderer),
+        " texture=", tostring(SDL.texture), " w=", tostring(self.screen.w), "\n")
+    do
+        local ffi_ok, ffi_mod = pcall(function() return require("ffi") end)
+        if ffi_ok and SDL.SDL.SDL_GetError then
+            local gok, gerr = pcall(function() return ffi_mod.string(SDL.SDL.SDL_GetError()) end)
+            if gok and gerr ~= "" then io.write("[diag] SDL_GetError: ", gerr, "\n") end
+        end
+    end
     self.powerd = require("device/sdl/powerd"):new{device = self}
 
     local ok, re = pcall(self.screen.setWindowIcon, self.screen, "resources/koreader.png")

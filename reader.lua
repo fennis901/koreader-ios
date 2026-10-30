@@ -156,6 +156,7 @@ end
 
 -- Setup device
 local Device = require("device")
+io.write(" [*] reader.lua: device init OK, screen created\n")
 
 -- iOS: LuaJIT runs interpreter-only and there's a multi-second gap
 -- between SDL creating its window and the file browser actually
@@ -173,6 +174,7 @@ if os.getenv("KO_IOS") == "1" then
             return
         end
         local lw, lh = logo:getWidth(), logo:getHeight()
+        io.write("[ios splash] logo loaded ", lw, "x", lh, " (screen ", sw, "x", sh, ")\n")
         screen.bb:fill(BB.COLOR_WHITE)
         screen.bb:blitFrom(logo,
             math.floor((sw - lw) / 2),
