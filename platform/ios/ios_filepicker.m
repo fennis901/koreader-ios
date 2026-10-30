@@ -230,13 +230,13 @@ void ko_ios_get_safe_area_pixels(int *out_top, int *out_right,
     }
     if (!win) return;
 
-    /* Force a layout pass so safeAreaInsets is populated. Early in
-     * launch the window may not have been laid out yet. */
-    if ([NSThread isMainThread]) {
-        [win layoutIfNeeded];
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), ^{ [win layoutIfNeeded]; });
-    }
+    /* NOTE: do NOT force [win layoutIfNeeded] here. SDL_main runs
+     * synchronously on the main thread, blocking the runloop; the
+     * appearance/layout transition begun by makeKeyAndVisible (during
+     * SDL_CreateWindow) never completes, so a synchronous layout pass
+     * deadlocks. safeAreaInsets is already populated by that initial
+     * layout; just read it. KOReader re-applies via framebuffer:resize()
+     * (which re-queries on rotation), so a stale/zero value self-corrects. */
 
     UIEdgeInsets insets = win.safeAreaInsets;
     CGFloat scale = win.screen ? win.screen.nativeScale
