@@ -62,6 +62,13 @@ targets:
           # is nil at boot and S.open() dies with "attempt to call a nil
           # value". Export all globals so dlsym can see them.
           - -Wl,-export_dynamic
+          # -dead_strip removes the unreferenced ko_ios_* bodies before
+          # -export_dynamic can export them, so also force each one to be
+          # treated as a referenced (kept) symbol with -Wl,-u.
+          - -Wl,-u,_ko_ios_get_safe_area_pixels
+          - -Wl,-u,_ko_ios_pick_folder_start
+          - -Wl,-u,_ko_ios_pick_folder_poll
+          - -Wl,-u,_ko_ios_resolve_bookmark
         # rpath so dyld finds the dylibs we copy into app/libs at post-build.
         LD_RUNPATH_SEARCH_PATHS:
           - $(inherited)
