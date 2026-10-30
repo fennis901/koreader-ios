@@ -54,6 +54,14 @@ targets:
         OTHER_LDFLAGS:
           - -lluajit
           - -lSDL3
+          # LuaJIT's ffi.C.<name> resolves symbols at runtime via
+          # dlsym(RTLD_DEFAULT), invisible to the static linker. Without
+          # -export_dynamic, -dead_strip (Release default) strips the
+          # ko_ios_* functions from ios_filepicker.m because nothing
+          # statically references them -> ffi.C.ko_ios_get_safe_area_pixels
+          # is nil at boot and S.open() dies with "attempt to call a nil
+          # value". Export all globals so dlsym can see them.
+          - -Wl,-export_dynamic
         # rpath so dyld finds the dylibs we copy into app/libs at post-build.
         LD_RUNPATH_SEARCH_PATHS:
           - $(inherited)
