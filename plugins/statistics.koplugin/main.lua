@@ -115,6 +115,7 @@ function ReaderStatistics:useColorRendering()
 end
 
 function ReaderStatistics:init()
+    print("[STATS] init begin")
     if self.document and self.document.is_pic then
         self.settings = { is_enabled = false }
         return -- disable in PIC documents
@@ -291,7 +292,9 @@ function ReaderStatistics:getStatsBookStatus()
 end
 
 function ReaderStatistics:checkInitDatabase()
+    print("[STATS] SQ3.open begin:", db_location)
     local conn = SQ3.open(db_location)
+    print("[STATS] SQ3.open done")
     if self.settings.convert_to_db then      -- if conversion to sqlite DB has already been done
         if not conn:exec("PRAGMA table_info('book');") then
             UIManager:show(ConfirmBox:new{

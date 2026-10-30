@@ -202,7 +202,9 @@ function PluginLoader:_load(t)
         disabled = v.disabled
         package.path = string.format("%s/?.lua;%s", plugin_root, package_path)
         package.cpath = string.format("%s/lib/?.so;%s", plugin_root, package_cpath)
+        logger.dbg("pluginloader: dofile begin", mainfile)
         local ok, plugin_module = pcall(dofile, mainfile)
+        logger.dbg("pluginloader: dofile end", mainfile, ok)
         if not ok or not plugin_module then
             logger.warn("Error when loading", mainfile, plugin_module)
         elseif type(plugin_module.disabled) ~= "boolean" or not plugin_module.disabled then

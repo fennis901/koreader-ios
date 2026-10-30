@@ -730,6 +730,7 @@ end
 
 
 -- values useful for item cells
+print("[VOCAB] top-level metrics: begin")
 local ellipsis_button_width = Screen:scaleBySize(34)
 local star_width = Screen:scaleBySize(25)
 
@@ -739,6 +740,7 @@ local point_widget = TextWidget:new{
     face = Font:getFace("cfont", 24),
     fgcolor = dim_color
 }
+print("[VOCAB] top-level metrics: point_widget created")
 
 --[[--
 Individual word item widget
@@ -770,10 +772,12 @@ local VocabItemWidget = InputContainer:extend{
     }
 --]]--
 
+print("[VOCAB] top-level metrics: before getSize")
 local point_widget_height = point_widget:getSize().h
 local point_widget_width = point_widget:getSize().w
 local word_height = TextWidget:new{text = " ", face = word_face}:getSize().h
 local subtitle_height = TextWidget:new{text = " ", face = subtitle_face}:getSize().h
+print("[VOCAB] top-level metrics: getSize done")
 
 
 function VocabItemWidget:init()
