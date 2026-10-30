@@ -73,6 +73,12 @@ G_reader_settings:saveSetting("dev_no_c_blitter", not is_cbb_enabled)
 local dbg = require("dbg")
 if G_reader_settings:isTrue("debug") then dbg:turnOn() end
 if G_reader_settings:isTrue("debug") and G_reader_settings:isTrue("debug_verbose") then dbg:setVerbose(true) end
+-- NOTE: Force debug mode on for the iOS build so the boot log is maximally
+--       informative for on-device diagnosis (the user cannot easily toggle
+--       this setting without editing the container's settings file).
+if os.getenv("KO_IOS") == "1" then
+    dbg:turnOn()
+end
 
 -- Option parsing:
 local longopts = {
