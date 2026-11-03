@@ -44,7 +44,6 @@ if device_id == nil or device_id == "" then
     local random = require("random")
     G_reader_settings:saveSetting("device_id", random.uuid())
 end
-io.write(" [*] reader.lua: early boot OK (settings loaded)\n")
 
 -- Apply the JIT opt tweaks ASAP when the C BB is disabled,
 -- because we want to avoid the jit.flush() from bb:enableCBB,
@@ -156,7 +155,6 @@ end
 
 -- Setup device
 local Device = require("device")
-io.write(" [*] reader.lua: device init OK, screen created\n")
 
 -- iOS: LuaJIT runs interpreter-only and there's a multi-second gap
 -- between SDL creating its window and the file browser actually
@@ -173,8 +171,6 @@ if os.getenv("KO_IOS") == "1" then
             io.write("[ios splash] renderImageFile returned nil for resources/koreader.png\n")
             return
         end
-        local lw, lh = logo:getWidth(), logo:getHeight()
-        io.write("[ios splash] logo loaded ", lw, "x", lh, " (screen ", sw, "x", sh, ")\n")
         screen.bb:fill(BB.COLOR_WHITE)
         screen.bb:blitFrom(logo,
             math.floor((sw - lw) / 2),
@@ -252,8 +248,6 @@ if G_reader_settings:isTrue("color_rendering") and not Device:hasColorScreen() t
     -- This will only return once the user has made a choice.
     UIManager:runOnce()
 end
-
-io.write(" [*] reader.lua: init done, launching UI\n")
 local exit_code
 
 if not Device:isStartupScriptUpToDate() then

@@ -21,8 +21,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/syslimits.h>
-#include <signal.h>
-#include <execinfo.h>
 
 #include "lua.h"
 #include "lualib.h"
@@ -32,35 +30,9 @@
 #define LANGUAGE "en_US.UTF-8"
 #define LUA_ERROR "failed to run lua chunk: %s\n"
 
-/* Diagnostic: dump native crash backtraces into the boot log (fd 2 is the
- * freopen'd boot log by the time plugins load). iOS keeps its own crash
- * reports we cannot read, so this is the only way to see where a native
- * crash inside Lua/FFI happened. Remove after diagnosis. */
-static void ko_crash_handler(int sig, siginfo_t *info, void *ucontext) {
-    void *frames[64];
-    int n = backtrace(frames, 64);
-    dprintf(STDERR_FILENO,
-            "\n===== KOReader native crash: signal %d (%s) at %p =====\n",
-            sig, strsignal(sig), info ? info->si_addr : NULL);
-    backtrace_symbols_fd(frames, n, STDERR_FILENO);
-    dprintf(STDERR_FILENO, "===== end backtrace =====\n");
-    _exit(128 + sig);
-}
-
-static void install_crash_handlers(void) {
-    struct sigaction sa;
-    memset(&sa, 0, sizeof(sa));
-    sa.sa_sigaction = ko_crash_handler;
-    sa.sa_flags = SA_SIGINFO;
-    sigaction(SIGSEGV, &sa, NULL);
-    sigaction(SIGABRT, &sa, NULL);
-    sigaction(SIGBUS, &sa, NULL);
-    sigaction(SIGILL, &sa, NULL);
-}
 
 int main(int argc, char *argv[]) {
     @autoreleasepool {
-        install_crash_handlers();
         NSString *resourcePath = [[NSBundle mainBundle] resourcePath];
         if (!resourcePath) {
             fprintf(stderr, "[%s]: NSBundle resourcePath is nil\n", LOGNAME);
@@ -108,22 +80,6 @@ int main(int argc, char *argv[]) {
             NSDocumentDirectory, NSUserDomainMask, YES);
         if (docs.count > 0) {
             setenv("KO_HOME", [docs[0] fileSystemRepresentation], 1);
-        }
-        /* Diagnostic: redirect stdout/stderr into the app's Documents dir so
-         * boot output (and any Lua/SDL error) is readable via the Files app
-         * (UIFileSharingEnabled). Remove after diagnosis. */
-        if (docs.count > 0) {
-            NSString *logPath = [docs[0] stringByAppendingPathComponent:@"ko_ios_boot.log"];
-            const char *lp = [logPath fileSystemRepresentation];
-            freopen(lp, "a", stdout);
-            freopen(lp, "a", stderr);
-            /* After freopen, streams are fully buffered on iOS — unbuffer so
-             * every Lua traceback / crash message lands in the log at once. */
-            setvbuf(stderr, NULL, _IONBF, 0);
-            setvbuf(stdout, NULL, _IONBF, 0);
-            setenv("KO_BOOT_LOG", lp, 1);
-            fprintf(stderr, "\n===== KOReader iOS launch %s =====\n",
-                    [[NSDate date] description].UTF8String);
         }
 
         lua_State *L = luaL_newstate();
